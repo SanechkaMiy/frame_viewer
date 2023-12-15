@@ -6,6 +6,7 @@
 #include <QGraphicsScene>
 #include <QString>
 #include <memory>
+
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
@@ -17,9 +18,7 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
-
 private:
     Ui::MainWindow *ui;
-
 };
 #endif // MAINWINDOW_H
