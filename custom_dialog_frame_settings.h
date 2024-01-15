@@ -15,7 +15,8 @@ public:
     explicit Custom_dialog_frame_settings(QWidget *parent = nullptr);
     ~Custom_dialog_frame_settings();
 signals:
-    void load_image(uint16_t rows, uint16_t cols);
+    void load_image(uint16_t type_data,
+                    uint16_t rows, uint16_t cols);
 private slots:
     void on_le_width_returnPressed();
 

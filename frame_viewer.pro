@@ -2,7 +2,7 @@ QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-CONFIG += c++11
+CONFIG += c++17
 
 # You can make your code fail to compile if it uses deprecated APIs.
 # In order to do so, uncomment the following line.
@@ -10,6 +10,7 @@ CONFIG += c++11
 
 SOURCES += \
     custom_dialog_frame_settings.cpp \
+    custom_frame_dialog.cpp \
     custom_graphic_scene.cpp \
     main.cpp \
     mainwindow.cpp \
@@ -19,6 +20,7 @@ SOURCES += \
 
 HEADERS += \
     custom_dialog_frame_settings.h \
+    custom_frame_dialog.h \
     custom_graphic_scene.h \
     mainwindow.h \
     custom_view_frame.h \
@@ -28,6 +30,7 @@ HEADERS += \
 
 FORMS += \
     custom_dialog_frame_settings.ui \
+    custom_frame_dialog.ui \
     mainwindow.ui
 
 # Default rules for deployment.

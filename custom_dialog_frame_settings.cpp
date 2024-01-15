@@ -15,18 +15,21 @@ Custom_dialog_frame_settings::~Custom_dialog_frame_settings()
 
 void Custom_dialog_frame_settings::on_le_width_returnPressed()
 {
-    emit load_image(ui->le_height->text().toInt(), ui->le_width->text().toInt());
+    emit load_image(ui->cb_type_pixel->currentIndex(),
+                    ui->le_height->text().toInt(), ui->le_width->text().toInt());
 }
 
 
 void Custom_dialog_frame_settings::on_le_height_returnPressed()
 {
-    emit load_image(ui->le_height->text().toInt(), ui->le_width->text().toInt());
+    emit load_image(ui->cb_type_pixel->currentIndex(),
+                    ui->le_height->text().toInt(), ui->le_width->text().toInt());
 }
 
 
 void Custom_dialog_frame_settings::on_cb_type_pixel_currentIndexChanged(int index)
 {
-    emit load_image(ui->le_height->text().toInt(), ui->le_width->text().toInt());
+    emit load_image(index,
+                    ui->le_height->text().toInt(), ui->le_width->text().toInt());
 }
 
