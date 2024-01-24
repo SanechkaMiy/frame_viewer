@@ -2,7 +2,7 @@
 #include <QDebug>
 
 
-Frame_manager::Frame_manager(std::shared_ptr<Frame_settings> frame_settings) :
+Frame_manager::Frame_manager(Frame_settings *frame_settings) :
     m_frame_settings(frame_settings)
 {
     create_frame_proc();
@@ -115,57 +115,7 @@ void Frame_manager::load_image(const QString& path,
     mat_to_pixmap(m_img);
 }
 
-//void Frame_manager::load_image(const QString& path, const uint16_t& rows, const uint16_t& colls)
-//{
-//    FILE* read_image = fopen(path.toStdString().c_str(), "rb");
-//    if (read_image == NULL)
-//    {
-//        printf("Image Not Found\n");
-//    }
 
-//    fseek(read_image, 0, SEEK_END);
-//    int fileLen = ftell(read_image);
-//    fseek(read_image, 0, SEEK_SET);
-//    void* lpv_buf = ::operator new (fileLen);
-//    fread(lpv_buf, fileLen, 1, read_image);
-//    fclose(read_image);
-//    uint8_t* lpwLine;
-//    std::array<std::array<uchar, 2048>, 2048> arr;
-//    //    std::vector<uchar> arr_buf;
-//    //    arr_buf.resize(rows * colls);
-//    ////    for (uint16_t row = 0; row < rows; row++)
-//    ////        arr[row].resize(colls);
-//    //std::vector<std::vector<uchar>> arr(2048);
-//    //    arr.resize(rows);
-//    //    for (uint16_t row = 0; row < rows; row++)
-//    //        arr[row].resize(colls);
-//    m_frame_settings->m_frame_buffer.resize(rows);
-//    for (uint16_t row = 0; row < rows; row++)
-//    {
-//        //arr[row].resize(colls);
-//        m_frame_settings->m_frame_buffer[row].resize(colls);
-//        lpwLine = (uint8_t*)lpv_buf + row * colls;
-//        for (uint16_t coll = 0; coll < colls; coll++)
-//        {
-//            m_frame_settings->m_frame_buffer[row][coll] = lpwLine[coll];
-//            arr[row][coll] = lpwLine[coll]; //>> 2;
-//        }
-//    }
-//    uint16_t temp;
-//    for (uint16_t row = 1; row < rows; row++)
-//    {
-//        for (uint16_t coll = 0; coll < row; coll++)
-//        {
-//            temp = m_frame_settings->m_frame_buffer[coll][row];
-//            m_frame_settings->m_frame_buffer[coll][row] = m_frame_settings->m_frame_buffer[row][coll];
-//            m_frame_settings->m_frame_buffer[row][coll] = temp;
-//        }
-//    }
-//    cv::Mat img(rows, colls, CV_8UC1, arr.data());
-//    m_img = img.clone();
-
-//    mat_to_pixmap(m_img);
-//}
 
 void Frame_manager::contrast_image(double contrast_value)
 {

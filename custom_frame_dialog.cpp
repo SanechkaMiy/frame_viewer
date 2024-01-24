@@ -1,26 +1,29 @@
 #include "custom_frame_dialog.h"
 #include "ui_custom_frame_dialog.h"
 
-Custom_frame_dialog::Custom_frame_dialog(std::shared_ptr<Frame_settings> frame_settings,
-                                         std::shared_ptr<Frame_manager> frame_manager,
-                                         uint16_t rows, uint16_t colls, QWidget *parent) :
+Custom_frame_dialog::Custom_frame_dialog(uint16_t rows, uint16_t colls, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::Custom_frame_dialog),
-    m_frame_settings(frame_settings),
-    m_frame_manager(frame_manager),
     m_rows(rows),
     m_colls(colls)
 {
     ui->setupUi(this);
     setWindowFlags(Qt::WindowSystemMenuHint | Qt::Dialog);
     QGraphicsScene* frame_scene = new QGraphicsScene(this);
+    m_frame_manager.reset(new Frame_manager(&m_frame_settings));
     ui->canvas_for_frame->setScene(frame_scene);
-    m_frame_item = new Frame_item();
+    m_frame_item = new QGraphicsPixmapItem();
+
     //m_frame_item->setFlags(QGraphicsItem::ItemIsMovable);
     frame_scene->addItem(m_frame_item);
     m_zoom_factor_base = 1.0015;
     ui->canvas_for_frame->viewport()->installEventFilter(this);
     ui->canvas_for_frame->setMouseTracking(true);
+    for (uint16_t num_item = 0; num_item  < m_pixel_threashold_to_show; num_item++)
+    {
+        m_text_item.push_back(new QGraphicsSimpleTextItem(m_frame_item));
+    }
+
 }
 
 void Custom_frame_dialog::set_frame_settings(uint16_t type_data, QString path)
@@ -49,8 +52,7 @@ void Custom_frame_dialog::clear_text_item()
     if (m_text_item.size() != 0)
     {
         for (auto el : m_text_item)
-            delete el;
-        m_text_item.clear();
+            el->setVisible(false);
     }
 }
 
@@ -68,8 +70,9 @@ void Custom_frame_dialog::add_text_item_on_pixmap(Text_rect &text_rect)
 
 void Custom_frame_dialog::create_text_item(Text_rect &text_rect, uint16_t &coll, uint16_t &row)
 {
-    m_text_item.push_back(new QGraphicsSimpleTextItem(QString::number(m_frame_settings->m_frame_buffer[coll][row]), m_frame_item));
     //            /std::cout << (row - text_rect.m_pos_y) + ((coll - text_rect.m_pos_x) * (text_rect.m_height - text_rect.m_pos_y))<< std::endl;
+    m_text_item[(row - text_rect.m_pos_y) + ((coll - text_rect.m_pos_x) * (text_rect.m_height - text_rect.m_pos_y))]->setVisible(true);
+    m_text_item[(row - text_rect.m_pos_y) + ((coll - text_rect.m_pos_x) * (text_rect.m_height - text_rect.m_pos_y))]->setText(QString::number(m_frame_settings.m_frame_buffer[coll][row]));
     m_text_item[(row - text_rect.m_pos_y) + ((coll - text_rect.m_pos_x) * (text_rect.m_height - text_rect.m_pos_y))]->setScale(0.01);
     m_text_item[(row - text_rect.m_pos_y) + ((coll - text_rect.m_pos_x) * (text_rect.m_height - text_rect.m_pos_y))]->setPos(coll + 0.03, row + 0.035);
     auto pixel_value = m_frame_manager->get_pixel_value(row, coll);
@@ -89,12 +92,15 @@ bool Custom_frame_dialog::eventFilter(QObject *object, QEvent *event)
         {
             m_target_viewport_pos = mouse_event->pos();
             m_target_scene_pos = ui->canvas_for_frame->mapToScene(mouse_event->pos());
+            m_is_scroll = false;
+            m_is_move = true;
             //
             //std::cout << m_frame_item->pos().x() << " " << m_frame_item->pos().y() << std::endl;
             //mapToScene(m_frame_item->boundingRect().bottomRight().toPoint())
         }
-    }
+        //QMouseEvent* mouse_event = static_cast<QMouseEvent*>(event);
 
+    }
     else if (event->type() == QEvent::Wheel)
     {
         ui->canvas_for_frame->setDragMode(QGraphicsView::DragMode::ScrollHandDrag);
@@ -103,6 +109,8 @@ bool Custom_frame_dialog::eventFilter(QObject *object, QEvent *event)
         {
             if (wheel_event->orientation() == Qt::Vertical)
             {
+                m_is_scroll = true;
+                m_is_move = false;
                 double angle = wheel_event->angleDelta().y();
                 double factor = qPow(m_zoom_factor_base, angle);
                 gentle_zoom(factor);
@@ -128,8 +136,6 @@ bool Custom_frame_dialog::eventFilter(QObject *object, QEvent *event)
             }
         }
     }
-
-
     Text_rect text_rect;
     text_rect.m_pos_x = (int)ui->canvas_for_frame->mapToScene(m_frame_item->boundingRect().topLeft().toPoint()).x();
     text_rect.m_pos_y = (int)ui->canvas_for_frame->mapToScene(m_frame_item->boundingRect().topLeft().toPoint()).y();
@@ -147,9 +153,8 @@ bool Custom_frame_dialog::eventFilter(QObject *object, QEvent *event)
         shift_coef_x = default_resolution.width / m_colls;
         shift_coef_y = default_resolution.height / m_rows;
     }
-    std::cout << text_rect.m_pos_x  << " " << text_rect.m_pos_y << std::endl;
-//    text_rect.m_width = text_rect.m_width + m_frame_item->pos().x();
-//    text_rect.m_height = text_rect.m_height + m_frame_item->pos().y();
+    //    text_rect.m_width = text_rect.m_width + m_frame_item->pos().x();
+    //    text_rect.m_height = text_rect.m_height + m_frame_item->pos().y();
     text_rect.m_width = text_rect.m_width + (text_rect.m_width - text_rect.m_pos_x) * shift_coef_x;
     text_rect.m_height = text_rect.m_height + (text_rect.m_height - text_rect.m_pos_y) * shift_coef_y;
     //std::cout << text_rect.m_width - text_rect.m_pos_x<< " " <<  text_rect.m_height - text_rect.m_pos_y << std::endl;
@@ -164,10 +169,34 @@ bool Custom_frame_dialog::eventFilter(QObject *object, QEvent *event)
     //        text_rect.m_height = m_target_scene_pos.y() + 25;
     //add_text_item_on_pixmap(text_rect);
 
-    if ((text_rect.m_width - text_rect.m_pos_x) * (text_rect.m_height - text_rect.m_pos_y) <= m_pixel_threashold_to_show)
-        add_text_item_on_pixmap(text_rect);
-    else
-        clear_text_item();
+    if (event->type() == QEvent::MouseButtonPress)
+    {
+        QMouseEvent* mouse_event = static_cast<QMouseEvent*>(event);
+        if (mouse_event->button() == Qt::LeftButton)
+        {
+            m_is_mouse_click = true;
+        }
+    }
+
+    if (event->type() == QEvent::MouseButtonRelease)
+    {
+        QMouseEvent* mouse_event = static_cast<QMouseEvent*>(event);
+        if (mouse_event->button() == Qt::LeftButton)
+        {
+            m_is_mouse_click = false;
+        }
+    }
+    if (m_is_mouse_click & m_is_move || m_is_scroll)
+    {
+        if ((text_rect.m_width - text_rect.m_pos_x) * (text_rect.m_height - text_rect.m_pos_y) <= m_pixel_threashold_to_show)
+        {
+            add_text_item_on_pixmap(text_rect);
+        }
+        else
+        {
+            clear_text_item();
+        }
+    }
     Q_UNUSED(object)
     return false;
 }
