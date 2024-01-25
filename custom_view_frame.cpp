@@ -9,13 +9,12 @@ Custom_view_frame::Custom_view_frame(QWidget *parent) :
     connect(m_dialog_frame_settings, &Custom_dialog_frame_settings::load_image, this, [this](uint16_t type_data, uint16_t rows, uint16_t colls)
     {
         //scale(15, 15);
-        m_frame.push_back(new Custom_frame_dialog(rows, colls));
+        m_frame.push_back(new Custom_frame_dialog(rows, colls, this));
         m_frame[m_count_frame]->setWindowTitle("Кадр " + QString::number(rows) + " на " + QString::number(colls));
         m_frame[m_count_frame]->set_frame_settings(type_data, m_path);
         //scale(0.1, 0.1);
         m_dialog_frame_settings->close();
         m_frame[m_count_frame]->show();
-        std::cout << &m_frame[m_count_frame] << std::endl;
         m_count_frame++;
 
     });

@@ -63,6 +63,8 @@ private:
     void clear_text_item();
     void add_text_item_on_pixmap(Text_rect& text_rect);
     void create_text_item(Text_rect& text_rect, uint16_t& coll, uint16_t& row);
+    void set_positive_value(int16_t& value);
+    void set_width_and_height_is_normalize(int16_t& width, int16_t& height);
 protected:
     bool eventFilter(QObject* object, QEvent* event) override;
 

@@ -14,7 +14,7 @@ Custom_frame_dialog::Custom_frame_dialog(uint16_t rows, uint16_t colls, QWidget 
     ui->canvas_for_frame->setScene(frame_scene);
     m_frame_item = new QGraphicsPixmapItem();
 
-    //m_frame_item->setFlags(QGraphicsItem::ItemIsMovable);
+    m_frame_item->setFlags(QGraphicsItem::ItemIsMovable);
     frame_scene->addItem(m_frame_item);
     m_zoom_factor_base = 1.0015;
     ui->canvas_for_frame->viewport()->installEventFilter(this);
@@ -82,6 +82,21 @@ void Custom_frame_dialog::create_text_item(Text_rect &text_rect, uint16_t &coll,
         m_text_item[(row - text_rect.m_pos_y) + ((coll - text_rect.m_pos_x) * (text_rect.m_height - text_rect.m_pos_y))]->setBrush(QBrush(QColor(Qt::white)));
 }
 
+void Custom_frame_dialog::set_positive_value(int16_t &value)
+{
+    if (value < 0)
+        value = 0;
+}
+
+void Custom_frame_dialog::set_width_and_height_is_normalize(int16_t &width, int16_t &height)
+{
+    if (width > m_colls)
+        width = m_colls;
+
+    if (height > m_rows)
+        height = m_rows;
+}
+
 bool Custom_frame_dialog::eventFilter(QObject *object, QEvent *event)
 {
     if (event->type() == QEvent::MouseMove)
@@ -95,7 +110,7 @@ bool Custom_frame_dialog::eventFilter(QObject *object, QEvent *event)
             m_is_scroll = false;
             m_is_move = true;
             //
-            //std::cout << m_frame_item->pos().x() << " " << m_frame_item->pos().y() << std::endl;
+
             //mapToScene(m_frame_item->boundingRect().bottomRight().toPoint())
         }
         //QMouseEvent* mouse_event = static_cast<QMouseEvent*>(event);
@@ -137,10 +152,15 @@ bool Custom_frame_dialog::eventFilter(QObject *object, QEvent *event)
         }
     }
     Text_rect text_rect;
-    text_rect.m_pos_x = (int)ui->canvas_for_frame->mapToScene(m_frame_item->boundingRect().topLeft().toPoint()).x();
-    text_rect.m_pos_y = (int)ui->canvas_for_frame->mapToScene(m_frame_item->boundingRect().topLeft().toPoint()).y();
-    text_rect.m_width = (int)ui->canvas_for_frame->mapToScene(m_frame_item->boundingRect().bottomRight().toPoint()).x();
-    text_rect.m_height = (int)ui->canvas_for_frame->mapToScene(m_frame_item->boundingRect().bottomRight().toPoint()).y();
+
+    text_rect.m_pos_x = (int)ui->canvas_for_frame->mapToScene(m_frame_item->boundingRect().topLeft().toPoint()).x() - (int)m_frame_item->pos().x();
+    text_rect.m_pos_y = (int)ui->canvas_for_frame->mapToScene(m_frame_item->boundingRect().topLeft().toPoint()).y() - (int)m_frame_item->pos().y();
+    text_rect.m_width = (int)ui->canvas_for_frame->mapToScene(m_frame_item->boundingRect().bottomRight().toPoint()).x()  - (int)m_frame_item->pos().x();
+    text_rect.m_height = (int)ui->canvas_for_frame->mapToScene(m_frame_item->boundingRect().bottomRight().toPoint()).y()  - (int)m_frame_item->pos().y();
+
+    set_positive_value(text_rect.m_pos_x);
+    set_positive_value(text_rect.m_pos_y);
+    set_width_and_height_is_normalize(text_rect.m_width, text_rect.m_height);
     uint16_t shift_coef_x = 0;
     uint16_t shift_coef_y = 0;
     if (default_resolution.height == m_rows && default_resolution.width == m_colls)
@@ -157,6 +177,7 @@ bool Custom_frame_dialog::eventFilter(QObject *object, QEvent *event)
     //    text_rect.m_height = text_rect.m_height + m_frame_item->pos().y();
     text_rect.m_width = text_rect.m_width + (text_rect.m_width - text_rect.m_pos_x) * shift_coef_x;
     text_rect.m_height = text_rect.m_height + (text_rect.m_height - text_rect.m_pos_y) * shift_coef_y;
+        std::cout << m_frame_item->pos().x() << " " << m_frame_item->pos().y() << " " << text_rect.m_width << " " << text_rect.m_height << std::endl;
     //std::cout << text_rect.m_width - text_rect.m_pos_x<< " " <<  text_rect.m_height - text_rect.m_pos_y << std::endl;
     //text_rect.m_width = text_rect.m_width + (text_rect.m_width - text_rect.m_pos_x);
     //        text_rect.m_height = text_rect.m_height + (text_rect.m_height - text_rect.m_pos_y);
