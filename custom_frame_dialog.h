@@ -53,6 +53,7 @@ private:
     QGraphicsPixmapItem* m_frame_item;
     double m_zoom_factor_base;
     std::vector<QGraphicsSimpleTextItem*> m_text_item;
+    std::vector<QGraphicsRectItem*> m_rect_item;
     QPointF m_target_scene_pos, m_target_viewport_pos;
     uint16_t m_rows;
     uint16_t m_colls ;
@@ -60,9 +61,9 @@ private:
     bool m_is_move = false;
     bool m_is_mouse_click = false;
     void gentle_zoom(double factor);
-    void clear_text_item();
-    void add_text_item_on_pixmap(Text_rect& text_rect);
-    void create_text_item(Text_rect& text_rect, uint16_t& coll, uint16_t& row);
+    void clear_graphics_item();
+    void add_items_on_pixmap(Text_rect& text_rect);
+    void set_items(Text_rect& text_rect, uint16_t& coll, uint16_t& row);
     void set_positive_value(int16_t& value);
     void set_width_and_height_is_normalize(int16_t& width, int16_t& height);
 protected:

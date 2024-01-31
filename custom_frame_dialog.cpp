@@ -13,15 +13,22 @@ Custom_frame_dialog::Custom_frame_dialog(uint16_t rows, uint16_t colls, QWidget 
     m_frame_manager.reset(new Frame_manager(&m_frame_settings));
     ui->canvas_for_frame->setScene(frame_scene);
     m_frame_item = new QGraphicsPixmapItem();
-
+    ui->canvas_for_frame->setBackgroundBrush(QBrush(Qt::black));
     m_frame_item->setFlags(QGraphicsItem::ItemIsMovable);
     frame_scene->addItem(m_frame_item);
     m_zoom_factor_base = 1.0015;
     ui->canvas_for_frame->viewport()->installEventFilter(this);
     ui->canvas_for_frame->setMouseTracking(true);
+    QPen pen_rect_style;
+    pen_rect_style.setWidthF(0.005);
+    pen_rect_style.setColor(Qt::white);
     for (uint16_t num_item = 0; num_item  < m_pixel_threashold_to_show; num_item++)
     {
         m_text_item.push_back(new QGraphicsSimpleTextItem(m_frame_item));
+        m_rect_item.push_back(new QGraphicsRectItem(m_frame_item));
+        m_rect_item[num_item]->setPen(pen_rect_style);
+        //        m_rect_item[num_item]->setBrush(Qt::NoBrush);
+
     }
 
 }
@@ -34,6 +41,14 @@ void Custom_frame_dialog::set_frame_settings(uint16_t type_data, QString path)
 
 Custom_frame_dialog::~Custom_frame_dialog()
 {
+    for (auto el : m_text_item)
+        delete el;
+    m_text_item.clear();
+
+    for (auto el : m_rect_item)
+        delete el;
+    m_rect_item.clear();
+
     delete ui;
 }
 
@@ -47,29 +62,32 @@ void Custom_frame_dialog::gentle_zoom(double factor)
     ui->canvas_for_frame->centerOn(ui->canvas_for_frame->mapToScene(viewport_center.toPoint()));
 }
 
-void Custom_frame_dialog::clear_text_item()
+void Custom_frame_dialog::clear_graphics_item()
 {
-    if (m_text_item.size() != 0)
-    {
-        for (auto el : m_text_item)
-            el->setVisible(false);
-    }
+    for (auto el : m_text_item)
+        el->setVisible(false);
+
+    for (auto el : m_rect_item)
+        el->setVisible(false);
 }
 
-void Custom_frame_dialog::add_text_item_on_pixmap(Text_rect &text_rect)
+void Custom_frame_dialog::add_items_on_pixmap(Text_rect &text_rect)
 {
-    clear_text_item();
+    clear_graphics_item();
     for (uint16_t coll = text_rect.m_pos_x; coll < text_rect.m_width; ++coll)
     {
         for (uint16_t row = text_rect.m_pos_y; row < text_rect.m_height; ++row)
         {
-            create_text_item(text_rect, coll, row);
+            set_items(text_rect, coll, row);
         }
     }
 }
 
-void Custom_frame_dialog::create_text_item(Text_rect &text_rect, uint16_t &coll, uint16_t &row)
+void Custom_frame_dialog::set_items(Text_rect &text_rect, uint16_t &coll, uint16_t &row)
 {
+    m_rect_item[(row - text_rect.m_pos_y) + ((coll - text_rect.m_pos_x) * (text_rect.m_height - text_rect.m_pos_y))]->setVisible(true);
+    m_rect_item[(row - text_rect.m_pos_y) + ((coll - text_rect.m_pos_x) * (text_rect.m_height - text_rect.m_pos_y))]->setRect(coll, row, 1, 1);
+
     //            /std::cout << (row - text_rect.m_pos_y) + ((coll - text_rect.m_pos_x) * (text_rect.m_height - text_rect.m_pos_y))<< std::endl;
     m_text_item[(row - text_rect.m_pos_y) + ((coll - text_rect.m_pos_x) * (text_rect.m_height - text_rect.m_pos_y))]->setVisible(true);
     m_text_item[(row - text_rect.m_pos_y) + ((coll - text_rect.m_pos_x) * (text_rect.m_height - text_rect.m_pos_y))]->setText(QString::number(m_frame_settings.m_frame_buffer[coll][row]));
@@ -155,12 +173,13 @@ bool Custom_frame_dialog::eventFilter(QObject *object, QEvent *event)
 
     text_rect.m_pos_x = (int)ui->canvas_for_frame->mapToScene(m_frame_item->boundingRect().topLeft().toPoint()).x() - (int)m_frame_item->pos().x();
     text_rect.m_pos_y = (int)ui->canvas_for_frame->mapToScene(m_frame_item->boundingRect().topLeft().toPoint()).y() - (int)m_frame_item->pos().y();
-    text_rect.m_width = (int)ui->canvas_for_frame->mapToScene(m_frame_item->boundingRect().bottomRight().toPoint()).x()  - (int)m_frame_item->pos().x();
-    text_rect.m_height = (int)ui->canvas_for_frame->mapToScene(m_frame_item->boundingRect().bottomRight().toPoint()).y()  - (int)m_frame_item->pos().y();
+    text_rect.m_width = (int)ui->canvas_for_frame->mapToScene(m_frame_item->boundingRect().bottomRight().toPoint()).x() - (int)m_frame_item->pos().x();
+    text_rect.m_height = (int)ui->canvas_for_frame->mapToScene(m_frame_item->boundingRect().bottomRight().toPoint()).y() - (int)m_frame_item->pos().y();
 
     set_positive_value(text_rect.m_pos_x);
     set_positive_value(text_rect.m_pos_y);
-    set_width_and_height_is_normalize(text_rect.m_width, text_rect.m_height);
+
+
     uint16_t shift_coef_x = 0;
     uint16_t shift_coef_y = 0;
     if (default_resolution.height == m_rows && default_resolution.width == m_colls)
@@ -177,7 +196,9 @@ bool Custom_frame_dialog::eventFilter(QObject *object, QEvent *event)
     //    text_rect.m_height = text_rect.m_height + m_frame_item->pos().y();
     text_rect.m_width = text_rect.m_width + (text_rect.m_width - text_rect.m_pos_x) * shift_coef_x;
     text_rect.m_height = text_rect.m_height + (text_rect.m_height - text_rect.m_pos_y) * shift_coef_y;
-        std::cout << m_frame_item->pos().x() << " " << m_frame_item->pos().y() << " " << text_rect.m_width << " " << text_rect.m_height << std::endl;
+
+    set_width_and_height_is_normalize(text_rect.m_width, text_rect.m_height);
+    std::cout << text_rect.m_pos_x << " " << text_rect.m_pos_y<< " " << text_rect.m_width << " " << text_rect.m_height << std::endl;
     //std::cout << text_rect.m_width - text_rect.m_pos_x<< " " <<  text_rect.m_height - text_rect.m_pos_y << std::endl;
     //text_rect.m_width = text_rect.m_width + (text_rect.m_width - text_rect.m_pos_x);
     //        text_rect.m_height = text_rect.m_height + (text_rect.m_height - text_rect.m_pos_y);
@@ -211,11 +232,11 @@ bool Custom_frame_dialog::eventFilter(QObject *object, QEvent *event)
     {
         if ((text_rect.m_width - text_rect.m_pos_x) * (text_rect.m_height - text_rect.m_pos_y) <= m_pixel_threashold_to_show)
         {
-            add_text_item_on_pixmap(text_rect);
+            add_items_on_pixmap(text_rect);
         }
         else
         {
-            clear_text_item();
+            clear_graphics_item();
         }
     }
     Q_UNUSED(object)

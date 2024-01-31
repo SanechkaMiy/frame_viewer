@@ -9,12 +9,12 @@ Custom_view_frame::Custom_view_frame(QWidget *parent) :
     connect(m_dialog_frame_settings, &Custom_dialog_frame_settings::load_image, this, [this](uint16_t type_data, uint16_t rows, uint16_t colls)
     {
         //scale(15, 15);
-        m_frame.push_back(new Custom_frame_dialog(rows, colls, this));
-        m_frame[m_count_frame]->setWindowTitle("Кадр " + QString::number(rows) + " на " + QString::number(colls));
-        m_frame[m_count_frame]->set_frame_settings(type_data, m_path);
+        auto frame = new Custom_frame_dialog(rows, colls, this);
+        frame->setWindowTitle("Кадр " + QString::number(rows) + " на " + QString::number(colls));
+        frame->set_frame_settings(type_data, m_path);
         //scale(0.1, 0.1);
         m_dialog_frame_settings->close();
-        m_frame[m_count_frame]->show();
+        frame->show();
         m_count_frame++;
 
     });
@@ -23,9 +23,9 @@ Custom_view_frame::Custom_view_frame(QWidget *parent) :
     m_empty_item = new Frame_item();
     m_graphic_scene->addItem(m_empty_item);
     m_empty_item->setAcceptDrops(true);
-    width();
-    height();
-    m_empty_item->setPixmap(QPixmap(parent->width(), parent->height()));
+    auto pixmap = QPixmap(parent->width(), parent->height());
+    pixmap.fill(Qt::black);
+    m_empty_item->setPixmap(pixmap);
     m_empty_item->setScale(100);
     connect(m_graphic_scene, &Custom_graphic_scene::send_url, this, [this](QString path)
     {
