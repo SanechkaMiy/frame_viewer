@@ -26,17 +26,7 @@ struct  Text_rect
     int16_t m_height;
 };
 
-struct  Frame_resolution
-{
-    Frame_resolution(uint16_t width, uint16_t height):
-        width(width), height(height)
-    {}
-    uint16_t width;
-    uint16_t height;
-};
-
 const uint16_t pixel_threashold = 100;
-const Frame_resolution default_resolution(2048, 2048);
 const int32_t m_pixel_threashold_to_show = 25 * 25;
 class Custom_frame_dialog : public QDialog
 {

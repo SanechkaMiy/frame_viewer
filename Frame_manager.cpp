@@ -16,12 +16,13 @@ QPixmap Frame_manager::add_image(const uint16_t& rows, const uint16_t& colls)
         cv::Mat img(rows, colls, CV_8UC1);
         mat_to_pixmap(img);
     }
+    std::cout << m_pixmap.size().rheight() << std::endl;
     return m_pixmap;
 }
 
-uint16_t Frame_manager::get_pixel_value(uint16_t &row, uint16_t &col)
+uint16_t Frame_manager::get_pixel_value(uint16_t &row, uint16_t &coll)
 {
-    return (int)m_img.at<uchar>(row, col);
+    return (int)m_img.at<uchar>(row, coll);
 }
 
 void Frame_manager::create_frame_proc()
@@ -77,6 +78,7 @@ void Frame_manager::create_frame_proc()
 
 void Frame_manager::mat_to_pixmap(cv::Mat img)
 {
+    std::cout << img.step << std::endl;
     m_pixmap = QPixmap::fromImage(QImage(img.data, img.cols, img.rows, img.step, QImage::Format_Grayscale8));
 }
 

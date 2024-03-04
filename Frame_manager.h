@@ -19,7 +19,7 @@ public:
                     const uint16_t& rows, const uint16_t& colls);
     void contrast_image(double contrast_value);
     QPixmap add_image(const uint16_t& rows, const uint16_t& colls);
-    uint16_t get_pixel_value(uint16_t& row, uint16_t& col);
+    uint16_t get_pixel_value(uint16_t& row, uint16_t& coll);
 private:
     void create_frame_proc();
     Frame_settings* m_frame_settings;

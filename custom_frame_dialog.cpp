@@ -74,9 +74,9 @@ void Custom_frame_dialog::clear_graphics_item()
 void Custom_frame_dialog::add_items_on_pixmap(Text_rect &text_rect)
 {
     clear_graphics_item();
-    for (uint16_t coll = text_rect.m_pos_x; coll < text_rect.m_width; ++coll)
+    for (uint16_t coll = text_rect.m_pos_x; coll < text_rect.m_pos_x + text_rect.m_width; ++coll)
     {
-        for (uint16_t row = text_rect.m_pos_y; row < text_rect.m_height; ++row)
+        for (uint16_t row = text_rect.m_pos_y; row < text_rect.m_pos_y + text_rect.m_height; ++row)
         {
             set_items(text_rect, coll, row);
         }
@@ -85,19 +85,19 @@ void Custom_frame_dialog::add_items_on_pixmap(Text_rect &text_rect)
 
 void Custom_frame_dialog::set_items(Text_rect &text_rect, uint16_t &coll, uint16_t &row)
 {
-    m_rect_item[(row - text_rect.m_pos_y) + ((coll - text_rect.m_pos_x) * (text_rect.m_height - text_rect.m_pos_y))]->setVisible(true);
-    m_rect_item[(row - text_rect.m_pos_y) + ((coll - text_rect.m_pos_x) * (text_rect.m_height - text_rect.m_pos_y))]->setRect(coll, row, 1, 1);
 
-    //            /std::cout << (row - text_rect.m_pos_y) + ((coll - text_rect.m_pos_x) * (text_rect.m_height - text_rect.m_pos_y))<< std::endl;
-    m_text_item[(row - text_rect.m_pos_y) + ((coll - text_rect.m_pos_x) * (text_rect.m_height - text_rect.m_pos_y))]->setVisible(true);
-    m_text_item[(row - text_rect.m_pos_y) + ((coll - text_rect.m_pos_x) * (text_rect.m_height - text_rect.m_pos_y))]->setText(QString::number(m_frame_settings.m_frame_buffer[coll][row]));
-    m_text_item[(row - text_rect.m_pos_y) + ((coll - text_rect.m_pos_x) * (text_rect.m_height - text_rect.m_pos_y))]->setScale(0.01);
-    m_text_item[(row - text_rect.m_pos_y) + ((coll - text_rect.m_pos_x) * (text_rect.m_height - text_rect.m_pos_y))]->setPos(coll + 0.03, row + 0.035);
+    m_rect_item[(row - text_rect.m_pos_y) + ((coll - text_rect.m_pos_x) * text_rect.m_height)]->setVisible(true);
+    m_rect_item[(row - text_rect.m_pos_y) + ((coll - text_rect.m_pos_x) * text_rect.m_height)]->setRect(coll, row, 1, 1);
+
+    m_text_item[(row - text_rect.m_pos_y) + ((coll - text_rect.m_pos_x) * text_rect.m_height)]->setVisible(true);
+    m_text_item[(row - text_rect.m_pos_y) + ((coll - text_rect.m_pos_x) * text_rect.m_height)]->setText(QString::number(m_frame_settings.m_frame_buffer[coll][row]));
+    m_text_item[(row - text_rect.m_pos_y) + ((coll - text_rect.m_pos_x) * text_rect.m_height)]->setScale(0.01);
+    m_text_item[(row - text_rect.m_pos_y) + ((coll - text_rect.m_pos_x) * text_rect.m_height)]->setPos(coll + 0.03, row + 0.035);
     auto pixel_value = m_frame_manager->get_pixel_value(row, coll);
     if (pixel_value >= pixel_threashold)
-        m_text_item[(row - text_rect.m_pos_y) + ((coll - text_rect.m_pos_x) * (text_rect.m_height - text_rect.m_pos_y))]->setBrush(QBrush(QColor(Qt::black)));
+        m_text_item[(row - text_rect.m_pos_y) + ((coll - text_rect.m_pos_x) * text_rect.m_height)]->setBrush(QBrush(QColor(Qt::black)));
     else
-        m_text_item[(row - text_rect.m_pos_y) + ((coll - text_rect.m_pos_x) * (text_rect.m_height - text_rect.m_pos_y))]->setBrush(QBrush(QColor(Qt::white)));
+        m_text_item[(row - text_rect.m_pos_y) + ((coll - text_rect.m_pos_x) * text_rect.m_height)]->setBrush(QBrush(QColor(Qt::white)));
 }
 
 void Custom_frame_dialog::set_positive_value(int16_t &value)
@@ -171,45 +171,26 @@ bool Custom_frame_dialog::eventFilter(QObject *object, QEvent *event)
     }
     Text_rect text_rect;
 
-    text_rect.m_pos_x = (int)ui->canvas_for_frame->mapToScene(m_frame_item->boundingRect().topLeft().toPoint()).x() - (int)m_frame_item->pos().x();
-    text_rect.m_pos_y = (int)ui->canvas_for_frame->mapToScene(m_frame_item->boundingRect().topLeft().toPoint()).y() - (int)m_frame_item->pos().y();
-    text_rect.m_width = (int)ui->canvas_for_frame->mapToScene(m_frame_item->boundingRect().bottomRight().toPoint()).x() - (int)m_frame_item->pos().x();
-    text_rect.m_height = (int)ui->canvas_for_frame->mapToScene(m_frame_item->boundingRect().bottomRight().toPoint()).y() - (int)m_frame_item->pos().y();
+    //    text_rect.m_pos_x = (int)ui->canvas_for_frame->mapToScene(m_frame_item->boundingRect().topLeft().toPoint()).x() - (int)m_frame_item->pos().x();
+    //    text_rect.m_pos_y = (int)ui->canvas_for_frame->mapToScene(m_frame_item->boundingRect().topLeft().toPoint()).y() - (int)m_frame_item->pos().y();
+    //    text_rect.m_width = (int)ui->canvas_for_frame->mapToScene(m_frame_item->boundingRect().bottomRight().toPoint()).x() - (int)m_frame_item->pos().x();
+    //    text_rect.m_height = (int)ui->canvas_for_frame->mapToScene(m_frame_item->boundingRect().bottomRight().toPoint()).y() - (int)m_frame_item->pos().y();
+
+    //    set_positive_value(text_rect.m_pos_x);
+    //    set_positive_value(text_rect.m_pos_y);
+
+
+    const auto visible_scene_rect{ui->canvas_for_frame->mapToScene(ui->canvas_for_frame->viewport()->rect()).boundingRect() };
+    text_rect.m_pos_x = static_cast<int>(visible_scene_rect.x() - m_frame_item->pos().x()) - 1;
+    text_rect.m_pos_y = static_cast<int>(visible_scene_rect.y() - m_frame_item->pos().y()) - 1;
+    text_rect.m_width = static_cast<int>(visible_scene_rect.width()) + 3;
+    text_rect.m_height = static_cast<int>(visible_scene_rect.height()) + 3;
 
     set_positive_value(text_rect.m_pos_x);
     set_positive_value(text_rect.m_pos_y);
 
-
-    uint16_t shift_coef_x = 0;
-    uint16_t shift_coef_y = 0;
-    if (default_resolution.height == m_rows && default_resolution.width == m_colls)
-    {
-        shift_coef_x = 0;
-        shift_coef_y = 0;
-    }
-    else
-    {
-        shift_coef_x = default_resolution.width / m_colls;
-        shift_coef_y = default_resolution.height / m_rows;
-    }
-    //    text_rect.m_width = text_rect.m_width + m_frame_item->pos().x();
-    //    text_rect.m_height = text_rect.m_height + m_frame_item->pos().y();
-    text_rect.m_width = text_rect.m_width + (text_rect.m_width - text_rect.m_pos_x) * shift_coef_x;
-    text_rect.m_height = text_rect.m_height + (text_rect.m_height - text_rect.m_pos_y) * shift_coef_y;
-
     set_width_and_height_is_normalize(text_rect.m_width, text_rect.m_height);
-    std::cout << text_rect.m_pos_x << " " << text_rect.m_pos_y<< " " << text_rect.m_width << " " << text_rect.m_height << std::endl;
-    //std::cout << text_rect.m_width - text_rect.m_pos_x<< " " <<  text_rect.m_height - text_rect.m_pos_y << std::endl;
-    //text_rect.m_width = text_rect.m_width + (text_rect.m_width - text_rect.m_pos_x);
-    //        text_rect.m_height = text_rect.m_height + (text_rect.m_height - text_rect.m_pos_y);
-    //text_rect.m_width = (int)mapToScene(m_frame_item->boundingRect().bottomRight().toPoint()).x() + (int)(mapToScene(m_frame_item->boundingRect().bottomRight().toPoint()).x() / 10);
-    //text_rect.m_height = (int)mapToScene(m_frame_item->boundingRect().bottomRight().toPoint()).y() + (int)(mapToScene(m_frame_item->boundingRect().bottomRight().toPoint()).y() / 10);
-    //        std::cout << m_frame_item->width() << " " << text_rect.m_height << std::endl;
-    //        text_rect.m_pos_x = m_target_scene_pos.x() - 25;
-    //        text_rect.m_pos_y = m_target_scene_pos.y() - 25;
-    //        text_rect.m_width = m_target_scene_pos.x() + 25;
-    //        text_rect.m_height = m_target_scene_pos.y() + 25;
-    //add_text_item_on_pixmap(text_rect);
+
 
     if (event->type() == QEvent::MouseButtonPress)
     {
@@ -228,17 +209,17 @@ bool Custom_frame_dialog::eventFilter(QObject *object, QEvent *event)
             m_is_mouse_click = false;
         }
     }
-    if (m_is_mouse_click & m_is_move || m_is_scroll)
-    {
-        if ((text_rect.m_width - text_rect.m_pos_x) * (text_rect.m_height - text_rect.m_pos_y) <= m_pixel_threashold_to_show)
+        if (m_is_mouse_click & m_is_move || m_is_scroll)
         {
-            add_items_on_pixmap(text_rect);
+            if (text_rect.m_width * text_rect.m_height <= m_pixel_threashold_to_show)
+            {
+                add_items_on_pixmap(text_rect);
+            }
+            else
+            {
+                clear_graphics_item();
+            }
         }
-        else
-        {
-            clear_graphics_item();
-        }
-    }
     Q_UNUSED(object)
     return false;
 }
